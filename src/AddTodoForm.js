@@ -1,28 +1,40 @@
 import React from "react";
 
-const AddTodoForm = (props) => {
+const AddTodoForm = ({ onAddTodo }) => {
+  const [todoTitle, setTodoTitle] = React.useState("");
+
+  const handleTitleChange = (event) => {
+    event.preventDefault();
+
+    let newTodoTitle = event.target.value;
+    setTodoTitle(newTodoTitle);
+  };
+
+  const resetTitle = () => {
+    setTodoTitle("");
+  };
+
   const handleAddTodo = (event) => {
     event.preventDefault();
 
-    let todoTitle = event.target.title.value;
-    console.log(todoTitle);
-    props.onAddTodo(todoTitle);
+    onAddTodo({
+      title: todoTitle,
+      id: Date.now(),
+    });
 
-    event.target.reset();
-
-    /**
-     * Here event.target refers to the HTML Form Element;
-     * Form control elements can be accessed by the value specified in their respective name attributes.
-     * Form control elements can also be accessed by their indexes based on their order in the form.
-     * document.querySelector("#todoTitle").value;
-     * document.querySelector("#todoForm").reset();
-     */
+    resetTitle();
   };
 
   return (
     <form id="todoForm" onSubmit={handleAddTodo}>
       <label htmlFor="todoTitle">Title</label>
-      <input id="todoTitle" type="text" name="title" />
+      <input
+        id="todoTitle"
+        type="text"
+        name="title"
+        value={todoTitle}
+        onChange={handleTitleChange}
+      />
       <button type="submit">Add</button>
     </form>
   );
