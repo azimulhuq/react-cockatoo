@@ -7,8 +7,7 @@ const AddTodoForm = ({ onAddTodo }) => {
   const handleTitleChange = (event) => {
     event.preventDefault();
 
-    let newTodoTitle = event.target.value;
-    setTodoTitle(newTodoTitle);
+    setTodoTitle(event.target.value);
   };
 
   const resetTitle = () => {
@@ -18,10 +17,7 @@ const AddTodoForm = ({ onAddTodo }) => {
   const handleAddTodo = (event) => {
     event.preventDefault();
 
-    onAddTodo({
-      title: todoTitle,
-      id: Date.now(),
-    });
+    onAddTodo(todoTitle);
 
     resetTitle();
   };
@@ -34,6 +30,7 @@ const AddTodoForm = ({ onAddTodo }) => {
       >
         Title:
       </InputWithLabel>
+      &nbsp;
       <button type="submit">Add</button>
     </form>
   );

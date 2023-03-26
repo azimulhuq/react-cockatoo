@@ -2,40 +2,73 @@ import React, { useState, useEffect } from "react";
 import TodoList from "./TodoList";
 import AddTodoForm from "./AddTodoForm";
 
+const url = `https://api.airtable.com/v0/${process.env.REACT_APP_AIRTABLE_BASE_ID}/Default/`;
+
 const App = () => {
   const [todoList, setTodoList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchTodos = () => {
+    fetch(url, {
+      headers: {
+        Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          const message = `Error: ${response.status}`;
+          throw new Error(message);
+        }
+
+        return response.json();
+      })
+      .then((result) => {
+        setTodoList(result.records);
+      })
+      .catch((error) => {
+        console.log(error.message);
+      });
+  };
+
   useEffect(() => {
-    new Promise((resolve, reject) =>
-      setTimeout(() => {
-        resolve({
-          data: {
-            todoList: JSON.parse(localStorage.getItem("savedTodoList")) || [],
-          },
-        });
-      }, 2000)
-    ).then((result) => {
-      setTodoList([...result.data.todoList]);
-      setIsLoading(false);
-    });
+    fetchTodos();
+    setIsLoading(false);
   }, []);
 
   const addTodo = (newTodo) => {
-    setTodoList([...todoList, newTodo]);
+    const airtableData = {
+      fields: {
+        Title: newTodo,
+      },
+    };
+
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
+      },
+      body: JSON.stringify(airtableData),
+    })
+      .then(() => fetchTodos())
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const removeTodo = (id) => {
-    const modifiedToDo = todoList.filter((list) => list.id !== id);
-
-    setTodoList(modifiedToDo);
+    fetch(url + id, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
+      },
+    })
+      .then(() => fetchTodos())
+      .catch((error) => {
+        console.error(error);
+      });
   };
-
-  useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem("savedTodoList", JSON.stringify(todoList));
-    }
-  }, [isLoading, todoList]);
 
   return (
     <>

@@ -3,13 +3,8 @@ import TodoListItem from "./TodoListItem";
 
 const TodoList = ({ todoList, onRemoveTodo }) => (
   <ul>
-    {todoList.map(({ id, title }) => (
-      <TodoListItem
-        key={id}
-        id={id}
-        title={title}
-        onRemoveTodo={onRemoveTodo}
-      />
+    {todoList.map((todo) => (
+      <TodoListItem key={todo.id} todo={todo} onRemoveTodo={onRemoveTodo} />
     ))}
   </ul>
 );
