@@ -1,8 +1,12 @@
 import React from "react";
 
-const TodoListItem = ({ todo, onRemoveTodo }) => (
+const TodoListItem = ({ todo, editTodo, onRemoveTodo }) => (
   <li>
-    {todo.fields.Title}{" "}
+    {todo.fields.Title}&nbsp;
+    <button type="button" onClick={() => editTodo(todo)}>
+      Edit
+    </button>
+    &nbsp;
     <button type="button" onClick={() => onRemoveTodo(todo.id)}>
       Remove
     </button>
