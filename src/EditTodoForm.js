@@ -15,7 +15,6 @@ const EditTodoForm = ({ setEditing, currentTodo, updateTodo }) => {
   };
   const handleUpdateTodo = (event) => {
     event.preventDefault();
-    console.log(todo);
 
     updateTodo(todo.id, todo);
 

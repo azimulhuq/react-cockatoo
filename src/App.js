@@ -32,6 +32,7 @@ const App = () => {
       })
       .then((result) => {
         setTodoList(result.records);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.log(error.message);
@@ -40,7 +41,6 @@ const App = () => {
 
   useEffect(() => {
     fetchTodos();
-    setIsLoading(false);
   }, []);
 
   const addTodo = (newTodo) => {
