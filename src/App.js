@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import TodoList from "./TodoList";
 import AddTodoForm from "./AddTodoForm";
 import EditTodoForm from "./EditTodoForm";
@@ -16,52 +17,61 @@ const App = () => {
     },
   });
 
-  const fetchTodos = () => {
-    fetch(url, {
-      headers: {
-        Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          const message = `Error: ${response.status}`;
-          throw new Error(message);
-        }
-
-        return response.json();
-      })
-      .then((result) => {
-        setTodoList(result.records);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error.message);
+  const fetchTodos = async () => {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
+        },
       });
+
+      if (!response.ok) {
+        const message = `Error has ocurred in fetching data: ${response.status}`;
+        throw new Error(message);
+      }
+
+      const result = await response.json();
+
+      setTodoList(result.records);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
   useEffect(() => {
     fetchTodos();
   }, []);
 
-  const addTodo = (newTodo) => {
-    const airtableData = {
-      fields: {
-        Title: newTodo,
-      },
-    };
+  const addTodo = async (newTodo) => {
+    try {
+      const airtableData = {
+        fields: {
+          Title: newTodo,
+        },
+      };
 
-    fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
-      },
-      body: JSON.stringify(airtableData),
-    })
-      .then(() => fetchTodos())
-      .catch((error) => {
-        console.error(error);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
+        },
+        body: JSON.stringify(airtableData),
       });
+
+      if (!response.ok) {
+        const message = `Error has ocurred in adding data: ${response.status}`;
+        throw new Error(message);
+      }
+
+      // eslint-disable-next-line no-unused-vars
+      const result = await response.json();
+
+      fetchTodos();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const editTodo = (todo) => {
@@ -74,63 +84,94 @@ const App = () => {
     });
   };
 
-  const updateTodo = (id, currentTodo) => {
-    setEditing(false);
+  const updateTodo = async (id, currentTodo) => {
+    try {
+      setEditing(false);
 
-    fetch(url + id, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        fields: {
-          Title: currentTodo.fields.Title,
+      const response = await fetch(url + id, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
         },
-      }),
-    })
-      .then(() => fetchTodos())
-      .catch((error) => {
-        console.error(error);
+        body: JSON.stringify({
+          fields: {
+            Title: currentTodo.fields.Title,
+          },
+        }),
       });
+
+      if (!response.ok) {
+        const message = `Error has ocurred in updating data: ${response.status}`;
+        throw new Error(message);
+      }
+
+      // eslint-disable-next-line no-unused-vars
+      const result = await response.json();
+
+      fetchTodos();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const removeTodo = (id) => {
-    fetch(url + id, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
-      },
-    })
-      .then(() => fetchTodos())
-      .catch((error) => {
-        console.error(error);
+  const removeTodo = async (id) => {
+    try {
+      const response = await fetch(url + id, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.REACT_APP_AIRTABLE_API_KEY}`,
+        },
       });
+
+      if (!response.ok) {
+        const message = `Error has ocurred in removing data: ${response.status}`;
+        throw new Error(message);
+      }
+
+      // eslint-disable-next-line no-unused-vars
+      const result = await response.json();
+
+      fetchTodos();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
-    <>
-      <h1>Todo List</h1>
-      {editing ? (
-        <EditTodoForm
-          setEditing={setEditing}
-          currentTodo={currentTodo}
-          updateTodo={updateTodo}
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          exact
+          element={
+            <>
+              <h1>Todo List</h1>
+              {editing ? (
+                <EditTodoForm
+                  setEditing={setEditing}
+                  currentTodo={currentTodo}
+                  updateTodo={updateTodo}
+                />
+              ) : (
+                <AddTodoForm onAddTodo={addTodo} />
+              )}
+              {isLoading ? (
+                <p>Loading...</p>
+              ) : (
+                <TodoList
+                  todoList={todoList}
+                  editTodo={editTodo}
+                  onRemoveTodo={removeTodo}
+                />
+              )}
+            </>
+          }
         />
-      ) : (
-        <AddTodoForm onAddTodo={addTodo} />
-      )}
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <TodoList
-          todoList={todoList}
-          editTodo={editTodo}
-          onRemoveTodo={removeTodo}
-        />
-      )}
-    </>
+        <Route path="/new" element={<h1>New Todo List</h1>} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
